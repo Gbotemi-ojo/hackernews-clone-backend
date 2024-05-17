@@ -19,13 +19,14 @@ export class AuthService {
     // save the new user in the db
     try {
       const user = await this.prisma.user.create({
-          data: {
-            username:dto.username,hashedPassword:dto.password
+        data: {
+          username: dto.username,
+          hashedPassword: hash,
         },
       });
-
       return this.signToken(user.id, user.username);
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }
@@ -44,6 +45,15 @@ export class AuthService {
     const pwMatches = await argon.verify(user.hashedPassword, dto.password);
     // if password incorrect throw exception
     if (!pwMatches) throw new ForbiddenException('Credentials incorrect');
+    let token = await this.signToken(user.id, user.username);
+    await this.prisma.user.updateMany({
+      where: {
+        id: user.id,
+      },
+      data: {
+        token: token.access_token,
+      },
+    });
     return this.signToken(user.id, user.username);
   }
 
@@ -58,7 +68,7 @@ export class AuthService {
     const secret = this.config.get('JWT_SECRET');
 
     const token = await this.jwt.signAsync(payload, {
-      expiresIn: '15m',
+      expiresIn: '60m',
       secret: secret,
     });
 
