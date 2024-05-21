@@ -16,6 +16,7 @@ CREATE TABLE "posts" (
     "url" TEXT NOT NULL,
     "userId" INTEGER NOT NULL,
     "uploaded_At" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
     CONSTRAINT "posts_pkey" PRIMARY KEY ("id")
 );
 
@@ -24,6 +25,7 @@ CREATE TABLE "Comment" (
     "id" SERIAL NOT NULL,
     "comment" TEXT NOT NULL,
     "uploaded_At" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "replyTo" INTEGER NOT NULL DEFAULT -1,
     "postId" INTEGER NOT NULL,
     "userId" INTEGER NOT NULL,
 

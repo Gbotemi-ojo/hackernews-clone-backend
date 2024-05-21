@@ -27,7 +27,6 @@ model Post {
   userId      Int
   uploaded_At DateTime  @default(now()) @map("uploaded_At")
   user        User      @relation(fields: [userId], references: [id])
-
   @@map("posts")
 }
 
@@ -35,6 +34,7 @@ model Comment {
   id          Int      @id @default(autoincrement())
   comment     String
   uploaded_At DateTime @default(now()) @map("uploaded_At")
+  replyTo Int @default(-1)
   postId      Int
   userId      Int
   post        Post     @relation(fields: [postId], references: [id])

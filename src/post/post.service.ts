@@ -11,7 +11,32 @@ export class PostService {
     let allPosts = this.prisma.post.findMany();
     return allPosts;
   }
-  upvote(postId: number, userId: number) {}
+  async upvotePost(postId: number, userId: number) {
+    const post = await this.prisma.post.findUnique({ where: { id: postId } });
+    const number_of_upvotes = post.upvotes;
+    return await this.prisma.post.update({
+      where: {
+        id: postId,
+      },
+      data: {
+        upvotes: number_of_upvotes + 1,
+      },
+    });
+  }
+  async unvotePost(postId: number, userId: number) {
+    const post = await this.prisma.post.findUnique({
+      where: { id: postId },
+    });
+    const number_of_upvotes = post.upvotes;
+    return await this.prisma.post.update({
+      where: {
+        id: postId,
+      },
+      data: {
+        upvotes: number_of_upvotes - 1,
+      },
+    });
+  }
   getPosts(userId: number) {
     let allposts = this.prisma.post.findMany({
       where: {
@@ -27,11 +52,10 @@ export class PostService {
     return allposts;
   }
 
-  getPostById(userId: number, postId: number) {
+  getPostById(postId: number) {
     return this.prisma.post.findFirst({
       where: {
         id: postId,
-        userId,
       },
     });
   }
@@ -68,6 +92,8 @@ export class PostService {
     });
   }
 
+  
+
   async deletePostById(userId: number, postId: number) {
     const post = await this.prisma.post.findUnique({
       where: {
@@ -90,6 +116,29 @@ export class PostService {
       data: {
         userId,
         postId,
+        ...dto,
+      },
+    });
+  }
+  async getComment(commentId: number,postId:number) {
+    return await this.prisma.comment.findUnique({
+      where: {
+        id: commentId,
+        postId : postId
+      }
+    })
+  }
+  async replyComment(
+    userId: number,
+    originalCommentId: number,
+    dto: CreateCommentDto,
+    postId: number,
+  ) {
+    return await this.prisma.comment.create({
+      data: {
+        userId,
+        postId,
+        replyTo: originalCommentId,
         ...dto,
       },
     });
@@ -148,27 +197,17 @@ export class PostService {
     }
     return post;
   }
-  async threads(userId: number) {
-    return await this.prisma.comment.findMany({
-      where: {
-        userId,
-      },
-    });
-  }
-  async getRandomComments() {
-    let allComments = await this.prisma.comment.findMany({});
-  }
 }
 let txt = 'My name is John Doe Amadi, I love humanity';
 function recurringLetter() {
-  let data = []
+  let data = [];
   let count = 0;
   let toLowerCase = txt.toLowerCase();
   let toArr = toLowerCase.split('');
   let trimmedArr = [];
-  for (let i = 0; i <= toArr.length - 1; i++){
+  for (let i = 0; i <= toArr.length - 1; i++) {
     if (toArr[i] !== ' ') {
-      trimmedArr.push(toArr[i])
+      trimmedArr.push(toArr[i]);
     }
   }
   for (let i = 0; i <= trimmedArr.length - 1; i++) {
@@ -180,7 +219,9 @@ function recurringLetter() {
       }
     }
   }
-  let sortedData = data.sort((firstItem, secondItem) => secondItem.count - firstItem.count);
-  let requiredLetter = sortedData[0].letter
-  return requiredLetter
+  let sortedData = data.sort(
+    (firstItem, secondItem) => secondItem.count - firstItem.count,
+  );
+  let requiredLetter = sortedData[0].letter;
+  return requiredLetter;
 }
